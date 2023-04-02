@@ -1,39 +1,75 @@
-//use clap::{App, Arg};
+use pulldown_cmark::{Event, Parser, Tag};
+use std::borrow::Cow;
 use std::error::Error;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
-//type InputResult<T> = Result<T, Box<dyn Error>>;
+type RunResult<T> = Result<T, Box<dyn Error>>;
 
-pub struct Args {
-    inputs: Vec<String>,
-    list: bool,
+pub fn run(sheets: Vec<String>, list: bool) -> RunResult<()> {
+    if sheets.len() <= 0 {
+        return Err(From::from("Zero Sheets to find."));
+    }
+
+    if let Some(file_sheet) = sheets.get(0) {
+        let path = get_file_from_name(file_sheet.to_string()).into_owned();
+        match open_file(&path) {
+            Err(err) => eprintln!("{}: {}", path, err),
+            Ok(file) => process_sheet(file),
+        }
+    }
+
+    Ok(())
 }
 
-// pub fn arg_parse() -> InputResult<Args> {
-//     let inputs_arg = Arg::new("inputs")
-//         .value_name("TEXT")
-//         .help("Cheat Sheet Inputs")
-//         .required(true)
-//         .min_values(1);
+fn get_file_from_name<'a>(name: String) -> Cow<'a, str> {
+    let path = format!("./tests/inputs/{}.md", name);
+    Cow::Owned(path)
+}
 
-//     let list_arg = Arg::new("list")
-//         .short("l")
-//         .long("list")
-//         .value_name("LIST")
-//         .help("list sheets")
-//         .takes_value(false);
+fn open_file(filename: &str) -> RunResult<Box<dyn BufRead>> {
+    match filename {
+        _ => Ok(Box::new(BufReader::new(File::open(filename)?))),
+    }
+}
 
-//     let matches = App::new("cheatsheet")
-//         .version("0.0.1")
-//         .author("jheryer")
-//         .about("Cheat Sheet Cli")
-//         .arg(inputs_arg)
-//         .arg(list_arg)
-//         .get_matches();
+fn process_sheet(reader: Box<dyn BufRead>) {
+    let markdown = reader
+        .lines()
+        .map(|line| line.unwrap())
+        .collect::<Vec<String>>()
+        .join("\n");
+    let parser = Parser::new(&markdown);
+    #[allow(unused)]
+    let mut in_heading = false;
+    let mut in_section = false;
+    let mut current_level = 0;
 
-//     let inputs = matches.values_of_lossy("inputs").unwrap();
-//     let list = matches.is_present("list").unwrap();
-//     Ok(Args {
-//         inputs: inputs,
-//         list: list,
-//     })
-// }
+    for event in parser {
+        match event {
+            #[allow(unused)]
+            Event::Start(Tag::Heading(level, ..)) => {
+                in_heading = true;
+                in_section = true;
+                current_level = level as i32;
+            }
+            #[allow(unused)]
+            Event::End(Tag::Heading(..)) => {
+                println!("\n");
+                in_heading = false;
+            }
+            #[allow(unreachable_patterns)]
+            Event::Start(Tag::Heading(new_level, ..))
+                if in_section && new_level as i32 <= current_level =>
+            {
+                in_section = false;
+            }
+            Event::Text(text) => {
+                if in_section {
+                    print!("{}", text);
+                }
+            }
+            _ => {}
+        }
+    }
+}

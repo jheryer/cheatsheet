@@ -1,4 +1,5 @@
 use assert_cmd::Command;
+use predicates::prelude::*;
 use std::error::Error;
 use std::fs;
 type TestResult = Result<(), Box<dyn Error>>;
@@ -16,6 +17,17 @@ fn run(args: &[&str], expected_file: &str) -> TestResult {
 }
 
 #[test]
+fn help() -> TestResult {
+    for flag in &["-h", "--help"] {
+        Command::cargo_bin(NAME)?
+            .arg(flag)
+            .assert()
+            .stdout(predicate::str::contains("Usage"));
+    }
+    Ok(())
+}
+
+#[test]
 fn runs_basic() -> TestResult {
-    run(&["tests/inputs/basic.md"], "tests/expected/basic.md")
+    run(&["basic"], "tests/expected/basic.md")
 }

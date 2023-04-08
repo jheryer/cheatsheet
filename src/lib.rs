@@ -15,7 +15,7 @@ pub fn run(sheets: Vec<String>, list: bool) -> RunResult<()> {
         let path = get_file_from_name(file_sheet.to_string()).into_owned();
         match open_file(&path) {
             Err(err) => eprintln!("{}: {}", path, err),
-            Ok(file) => process_new_sheet(file),
+            Ok(file) => process_new_sheet(file, &sheets[1..]),
         }
     }
 
@@ -68,10 +68,11 @@ impl MDSection {
     }
 }
 
-fn process_new_sheet(sheet: Box<dyn BufRead>) {
+fn process_new_sheet(sheet: Box<dyn BufRead>, filter: &[String]) {
+    let sections_to_filter = filter.to_vec();
     let mut parsed_sheet = MDSheet::new();
     parsed_sheet.push(MDSection::new());
-    for (line_num, line) in sheet.lines().enumerate() {
+    for line in sheet.lines() {
         let line = line.unwrap();
         let new_section = section_check(&line);
         match new_section {
@@ -86,24 +87,32 @@ fn process_new_sheet(sheet: Box<dyn BufRead>) {
             }
         }
     }
-    println!("{:?}", parsed_sheet);
 
-    let display_rows = filter_section(&parsed_sheet, "second-block");
-    let display_rows2 = filter_section(&parsed_sheet, "third-block");
-    println!("{:?}", display_rows);
-    println!("{:?}", display_rows2);
     let skin = make_skin();
-    let display_string = display_rows.join("\n");
-    show(&skin, &display_string);
+    if sections_to_filter.len() > 0 {
+        for section in sections_to_filter {
+            let display_rows = filter_sections(&parsed_sheet, &section);
+            let display_string = display_rows.join("\n");
+            show(&skin, &display_string);
+        }
+    } else {
+        let display_rows = all_sections(&parsed_sheet);
+        let display_string = display_rows.join("\n");
+        show(&skin, &display_string);
+    }
 }
 
-fn filter_section(sheet: &Vec<MDSection>, filter: &str) -> Vec<String> {
+fn filter_sections(sheet: &MDSheet, filter: &str) -> Vec<String> {
     sheet
         .iter()
         .filter(|s| s.anchor.eq(&filter))
         .flat_map(|s| &s.content)
         .cloned()
         .collect()
+}
+
+fn all_sections(sheet: &MDSheet) -> Vec<String> {
+    sheet.iter().flat_map(|s| &s.content).cloned().collect()
 }
 
 fn make_skin() -> MadSkin {

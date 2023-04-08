@@ -1,11 +1,11 @@
-use pulldown_cmark::{Event, Parser, Tag};
 use std::borrow::Cow;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-
+use termimad::crossterm::style::Color::*;
+use termimad::*;
 type RunResult<T> = Result<T, Box<dyn Error>>;
-
+type MDSheet = Vec<MDSection>;
 pub fn run(sheets: Vec<String>, list: bool) -> RunResult<()> {
     if sheets.len() <= 0 {
         return Err(From::from("Zero Sheets to find."));
@@ -28,6 +28,12 @@ fn get_file_from_name<'a>(name: String) -> Cow<'a, str> {
     Cow::Owned(path)
 }
 
+#[test]
+fn test_get_file_from_name() {
+    let subject = get_file_from_name(String::from("test_name"));
+    assert_eq!(subject, "./tests/inputs/test_name.md");
+}
+
 fn open_file(filename: &str) -> RunResult<Box<dyn BufRead>> {
     match filename {
         _ => Ok(Box::new(BufReader::new(File::open(filename)?))),
@@ -36,6 +42,7 @@ fn open_file(filename: &str) -> RunResult<Box<dyn BufRead>> {
 #[derive(Debug)]
 struct MDSection {
     depth: usize,
+    anchor: String,
     content: Vec<String>,
 }
 
@@ -43,13 +50,15 @@ impl MDSection {
     fn new() -> MDSection {
         MDSection {
             depth: 0,
+            anchor: String::from(""),
             content: Vec::new(),
         }
     }
 
-    fn new_section(depth: usize) -> MDSection {
+    fn new_section(depth: usize, anchor: String) -> MDSection {
         MDSection {
             depth: depth,
+            anchor: anchor,
             content: Vec::new(),
         }
     }
@@ -60,7 +69,7 @@ impl MDSection {
 }
 
 fn process_new_sheet(sheet: Box<dyn BufRead>) {
-    let mut parsed_sheet = Vec::<MDSection>::new();
+    let mut parsed_sheet = MDSheet::new();
     parsed_sheet.push(MDSection::new());
     for (line_num, line) in sheet.lines().enumerate() {
         let line = line.unwrap();
@@ -77,13 +86,42 @@ fn process_new_sheet(sheet: Box<dyn BufRead>) {
             }
         }
     }
+    println!("{:?}", parsed_sheet);
 
-    println!("{:?}", parsed_sheet)
+    let display_rows = filter_section(&parsed_sheet, "second-block");
+    let display_rows2 = filter_section(&parsed_sheet, "third-block");
+    println!("{:?}", display_rows);
+    println!("{:?}", display_rows2);
+    let skin = make_skin();
+    let display_string = display_rows.join("\n");
+    show(&skin, &display_string);
+}
+
+fn filter_section(sheet: &Vec<MDSection>, filter: &str) -> Vec<String> {
+    sheet
+        .iter()
+        .filter(|s| s.anchor.eq(&filter))
+        .flat_map(|s| &s.content)
+        .cloned()
+        .collect()
+}
+
+fn make_skin() -> MadSkin {
+    let mut skin = MadSkin::default();
+    skin.table.align = Alignment::Center;
+    skin.set_headers_fg(Green);
+    skin.bold.set_fg(Yellow);
+    skin.italic.set_fg(Blue);
+    skin.code_block.align = Alignment::Center;
+    skin
+}
+
+fn show(skin: &MadSkin, src: &str) {
+    skin.print_text(src);
 }
 
 fn section_check(line: &str) -> Option<MDSection> {
     let mut depth = 0;
-
     for ch in line.chars() {
         match ch {
             '#' => depth += 1,
@@ -94,6 +132,36 @@ fn section_check(line: &str) -> Option<MDSection> {
     if depth == 0 {
         return None;
     }
+    let anchor = heading_to_anchor(line);
+    Some(MDSection::new_section(depth, anchor))
+}
 
-    Some(MDSection::new_section(depth))
+#[test]
+fn test_heading_to_anchor() {
+    let heading_simple = "# simple";
+    let heading_simple_two = "#simple";
+    let heading_one = "# heading one";
+    let heading_two = "## heading two";
+    let heading_three = "###     this is a really long heading three";
+
+    let subject_one = heading_to_anchor(heading_one);
+    let subject_two = heading_to_anchor(heading_two);
+    let subject_three = heading_to_anchor(heading_three);
+    let subject_four = heading_to_anchor(heading_simple);
+    let subject_five = heading_to_anchor(heading_simple_two);
+
+    assert_eq!(subject_one, "heading-one");
+    assert_eq!(subject_two, "heading-two");
+    assert_eq!(subject_three, "this-is-a-really-long-heading-three");
+    assert_eq!(subject_four, "simple");
+    assert_eq!(subject_five, "simple");
+}
+
+fn heading_to_anchor(heading: &str) -> String {
+    let without_hashes = heading.trim_start_matches('#').trim();
+    let words = without_hashes.split_whitespace();
+    words
+        .map(|word| word.to_lowercase())
+        .collect::<Vec<String>>()
+        .join("-")
 }

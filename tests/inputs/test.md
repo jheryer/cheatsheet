@@ -30,3 +30,7 @@ section
    Section(depth, content),
    Section(depth, content),
  ]
+
+ while section.depth > current.depth {
+    print section
+ }

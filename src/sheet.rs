@@ -3,7 +3,6 @@ use termimad::crossterm::style::Color::*;
 use termimad::*;
 
 type MDSheet = Vec<MDSection>;
-#[derive(Debug)]
 struct MDSection {
     anchor: String,
     content: Vec<String>,
@@ -51,7 +50,7 @@ fn parse_sheet(sheet: Box<dyn BufRead>) -> MDSheet {
     cheat_sheet.push(MDSection::new());
     for line in sheet.lines() {
         let line = line.unwrap();
-        let new_section = section_check(&line);
+        let new_section = create_new_section(&line);
         match new_section {
             Some(mut section) => {
                 section.add_line(String::from(&line));
@@ -107,36 +106,30 @@ fn show(skin: &MadSkin, src: &str) {
     skin.print_text(src);
 }
 
-fn section_check(line: &str) -> Option<MDSection> {
-    let mut depth = 0;
-    for ch in line.chars() {
-        match ch {
-            '#' => depth += 1,
-            _ => break,
+fn create_new_section(line: &str) -> Option<MDSection> {
+    match line.chars().nth(0) {
+        Some('#') => {
+            let anchor = heading_to_anchor(line);
+            Some(MDSection::new_section(anchor))
         }
+        _ => None,
     }
-
-    if depth == 0 {
-        return None;
-    }
-    let anchor = heading_to_anchor(line);
-    Some(MDSection::new_section(anchor))
 }
 
 #[test]
 fn test_basic_section_check() {
-    let section_heading = section_check("this#isnot a section Heading");
+    let section_heading = create_new_section("this#isnot a section Heading");
     assert!(section_heading.is_none());
 
-    let section_heading = section_check("#one section");
+    let section_heading = create_new_section("#one section");
     let subject = section_heading.unwrap();
     assert_eq!(subject.anchor, "one-section");
 
-    let section_heading = section_check("##two ");
+    let section_heading = create_new_section("##two ");
     let subject = section_heading.unwrap();
     assert_eq!(subject.anchor, "two");
 
-    let section_heading = section_check("####a really long section heading ");
+    let section_heading = create_new_section("####a really long section heading ");
     let subject = section_heading.unwrap();
     assert_eq!(subject.anchor, "a-really-long-section-heading");
 }

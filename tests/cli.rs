@@ -1,5 +1,6 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
+use std::env;
 use std::error::Error;
 use std::fs;
 type TestResult = Result<(), Box<dyn Error>>;
@@ -7,6 +8,7 @@ type TestResult = Result<(), Box<dyn Error>>;
 const NAME: &str = "cheatsheet";
 
 fn run(args: &[&str], expected_file: &str) -> TestResult {
+    env::set_var("CHEAT_SHEET_PATH", "./tests/inputs");
     let expected = fs::read_to_string(expected_file)?;
     Command::cargo_bin(NAME)?
         .args(args)
@@ -15,12 +17,13 @@ fn run(args: &[&str], expected_file: &str) -> TestResult {
         .stdout(expected);
     Ok(())
 }
-
 #[test]
 fn help() -> TestResult {
+    env::set_var("CHEAT_SHEET_PATH", "./tests/inputs");
     for flag in &["-h", "--help"] {
         Command::cargo_bin(NAME)?
             .arg(flag)
+            .env("CHEAT_SHEET_PATH", "tests/inputs")
             .assert()
             .stdout(predicate::str::contains("Usage"));
     }
@@ -29,12 +32,13 @@ fn help() -> TestResult {
 
 #[test]
 fn missing_sheet() -> TestResult {
+    env::set_var("CHEAT_SHEET_PATH", "./tests/inputs");
     for flag in &["missing"] {
         Command::cargo_bin(NAME)?
             .arg(flag)
             .assert()
             .stderr(predicate::str::contains(
-                "./tests/inputs/missing.md: No such file or directory (os error 2)\n",
+                "tests/inputs/missing.md: No such file or directory",
             ));
     }
     Ok(())

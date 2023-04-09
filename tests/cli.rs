@@ -28,6 +28,27 @@ fn help() -> TestResult {
 }
 
 #[test]
-fn runs_basic() -> TestResult {
-    run(&["basic"], "tests/expected/basic.md")
+fn missing_sheet() -> TestResult {
+    for flag in &["missing"] {
+        Command::cargo_bin(NAME)?
+            .arg(flag)
+            .assert()
+            .stderr(predicate::str::contains(
+                "./tests/inputs/missing.md: No such file or directory (os error 2)\n",
+            ));
+    }
+    Ok(())
+}
+
+#[test]
+fn test_full_document() -> TestResult {
+    run(&["basic"], "tests/expected/full-output.txt")
+}
+
+#[test]
+fn test_query_by_first_anchor() -> TestResult {
+    run(
+        &["basic", "first-block"],
+        "tests/expected/first-block-output.txt",
+    )
 }

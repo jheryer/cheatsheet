@@ -1,20 +1,18 @@
-## First Block
+[38;5;10m[4mFirst Block[0m
 this is text in the first block 
-```
-git code in first block
-cd /pub/blah whocha cha
-```
+[48;5;235m[38;5;249mgit code in first block[49m[39m
+[48;5;235m[38;5;249mcd /pub/blah whocha cha[49m[39m
   1. one
   2. two
   x. three
    . four
-## Second Block
+[38;5;10m[4mSecond Block[0m
 This is text in the second block
 
-### Third Block
+[38;5;10m[4mThird Block[0m
 This is text in the third block
 
-#### fourth Block
+[38;5;10m[4mfourth Block[0m
 This is text in the fourthdd block
 This is text in the fourthdd block
 This is text in the fourthdd block

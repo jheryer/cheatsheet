@@ -1,12 +1,13 @@
 use std::borrow::Cow;
 use std::error::Error;
-use std::fs::File;
+use std::fs::{read_dir, File};
 use std::io::{BufRead, BufReader};
 use termimad::crossterm::style::Color::*;
 use termimad::*;
 type RunResult<T> = Result<T, Box<dyn Error>>;
 type MDSheet = Vec<MDSection>;
-pub fn run(sheets: Vec<String>, list: bool) -> RunResult<()> {
+
+pub fn run(sheets: Vec<String>) -> RunResult<()> {
     if sheets.len() <= 0 {
         return Err(From::from("Zero Sheets to find."));
     }
@@ -19,6 +20,26 @@ pub fn run(sheets: Vec<String>, list: bool) -> RunResult<()> {
         }
     }
 
+    Ok(())
+}
+
+pub fn list(dir_path: &str) -> RunResult<()> {
+    let mut filenames = Vec::new();
+
+    for entry in read_dir(dir_path)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_file() {
+            if let Some(stem) = path.file_stem() {
+                if let Some(stem_str) = stem.to_str() {
+                    filenames.push(stem_str.to_string());
+                }
+            }
+        }
+    }
+    for filename in filenames {
+        println!("{}", filename);
+    }
     Ok(())
 }
 
@@ -41,7 +62,6 @@ fn open_file(filename: &str) -> RunResult<Box<dyn BufRead>> {
 }
 #[derive(Debug)]
 struct MDSection {
-    depth: usize,
     anchor: String,
     content: Vec<String>,
 }
@@ -49,15 +69,13 @@ struct MDSection {
 impl MDSection {
     fn new() -> MDSection {
         MDSection {
-            depth: 0,
             anchor: String::from(""),
             content: Vec::new(),
         }
     }
 
-    fn new_section(depth: usize, anchor: String) -> MDSection {
+    fn new_section(anchor: String) -> MDSection {
         MDSection {
-            depth: depth,
             anchor: anchor,
             content: Vec::new(),
         }
@@ -117,11 +135,9 @@ fn all_sections(sheet: &MDSheet) -> Vec<String> {
 
 fn make_skin() -> MadSkin {
     let mut skin = MadSkin::default();
-    skin.table.align = Alignment::Center;
     skin.set_headers_fg(Green);
     skin.bold.set_fg(Yellow);
     skin.italic.set_fg(Blue);
-    skin.code_block.align = Alignment::Center;
     skin
 }
 
@@ -142,7 +158,7 @@ fn section_check(line: &str) -> Option<MDSection> {
         return None;
     }
     let anchor = heading_to_anchor(line);
-    Some(MDSection::new_section(depth, anchor))
+    Some(MDSection::new_section(anchor))
 }
 
 #[test]

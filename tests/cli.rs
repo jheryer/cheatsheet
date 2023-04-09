@@ -52,3 +52,13 @@ fn test_query_by_first_anchor() -> TestResult {
         "tests/expected/first-block-output.txt",
     )
 }
+
+#[test]
+fn test_sheet_list() -> TestResult {
+    run(&["-l"], "tests/expected/list-basic.txt")
+}
+
+#[test]
+fn test_basic_sheet_list_anchors() -> TestResult {
+    run(&["basic", "-l"], "tests/expected/list-basic-anchors.txt")
+}

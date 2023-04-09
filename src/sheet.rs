@@ -29,40 +29,59 @@ impl MDSection {
     }
 }
 
-pub fn process_new_sheet(sheet: Box<dyn BufRead>, filter: &[String]) {
+pub fn process_new_sheet(sheet: Box<dyn BufRead>, filter: &[String], list: bool) {
     let sections_to_filter = filter.to_vec();
-    let mut parsed_sheet = MDSheet::new();
-    parsed_sheet.push(MDSection::new());
+    let target_sheet = parse_sheet(sheet);
+
+    if list {
+        display_sheet_anchors(&target_sheet)
+    } else {
+        display_sheet_details(&target_sheet, &sections_to_filter)
+    }
+}
+
+fn display_sheet_anchors(sheet: &MDSheet) {
+    for section in sheet {
+        println!("{}", section.anchor);
+    }
+}
+
+fn parse_sheet(sheet: Box<dyn BufRead>) -> MDSheet {
+    let mut cheat_sheet = MDSheet::new();
+    cheat_sheet.push(MDSection::new());
     for line in sheet.lines() {
         let line = line.unwrap();
         let new_section = section_check(&line);
         match new_section {
             Some(mut section) => {
                 section.add_line(String::from(&line));
-                parsed_sheet.push(section);
+                cheat_sheet.push(section);
             }
             _ => {
-                if let Some(last) = parsed_sheet.last_mut() {
+                if let Some(last) = cheat_sheet.last_mut() {
                     last.add_line(String::from(&line));
                 }
             }
         }
     }
 
+    cheat_sheet
+}
+
+fn display_sheet_details(sheet: &MDSheet, filter: &Vec<String>) {
     let skin = make_skin();
-    if sections_to_filter.len() > 0 {
-        for section in sections_to_filter {
-            let display_rows = filter_sections(&parsed_sheet, &section);
+    if filter.len() > 0 {
+        for section in filter {
+            let display_rows = filter_sections(&sheet, &section);
             let display_string = display_rows.join("\n");
             show(&skin, &display_string);
         }
     } else {
-        let display_rows = all_sections(&parsed_sheet);
+        let display_rows = all_sections(&sheet);
         let display_string = display_rows.join("\n");
         show(&skin, &display_string);
     }
 }
-
 fn filter_sections(sheet: &MDSheet, filter: &str) -> Vec<String> {
     sheet
         .iter()
@@ -105,24 +124,21 @@ fn section_check(line: &str) -> Option<MDSection> {
 }
 
 #[test]
-fn test_heading_to_anchor() {
-    let heading_simple = "# simple";
-    let heading_simple_two = "#simple";
-    let heading_one = "# heading one";
-    let heading_two = "## heading two";
-    let heading_three = "###     this is a really long heading three";
+fn test_basic_section_check() {
+    let section_heading = section_check("this#isnot a section Heading");
+    assert!(section_heading.is_none());
 
-    let subject_one = heading_to_anchor(heading_one);
-    let subject_two = heading_to_anchor(heading_two);
-    let subject_three = heading_to_anchor(heading_three);
-    let subject_four = heading_to_anchor(heading_simple);
-    let subject_five = heading_to_anchor(heading_simple_two);
+    let section_heading = section_check("#one section");
+    let subject = section_heading.unwrap();
+    assert_eq!(subject.anchor, "one-section");
 
-    assert_eq!(subject_one, "heading-one");
-    assert_eq!(subject_two, "heading-two");
-    assert_eq!(subject_three, "this-is-a-really-long-heading-three");
-    assert_eq!(subject_four, "simple");
-    assert_eq!(subject_five, "simple");
+    let section_heading = section_check("##two ");
+    let subject = section_heading.unwrap();
+    assert_eq!(subject.anchor, "two");
+
+    let section_heading = section_check("####a really long section heading ");
+    let subject = section_heading.unwrap();
+    assert_eq!(subject.anchor, "a-really-long-section-heading");
 }
 
 fn heading_to_anchor(heading: &str) -> String {
@@ -132,4 +148,28 @@ fn heading_to_anchor(heading: &str) -> String {
         .map(|word| word.to_lowercase())
         .collect::<Vec<String>>()
         .join("-")
+}
+
+#[test]
+
+fn test_heading_to_anchor() {
+    let heading = "# simple";
+    let subject = heading_to_anchor(heading);
+    assert_eq!(subject, "simple");
+
+    let heading = "#simple";
+    let subject = heading_to_anchor(heading);
+    assert_eq!(subject, "simple");
+
+    let heading = "# heading one";
+    let subject = heading_to_anchor(heading);
+    assert_eq!(subject, "heading-one");
+
+    let heading = "## heading two";
+    let subject = heading_to_anchor(heading);
+    assert_eq!(subject, "heading-two");
+
+    let heading = "###     this is a really long heading three";
+    let subject = heading_to_anchor(heading);
+    assert_eq!(subject, "this-is-a-really-long-heading-three");
 }

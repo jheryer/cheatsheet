@@ -5,7 +5,7 @@ use std::fs::{read_dir, File};
 use std::io::{BufRead, BufReader};
 type RunResult<T> = Result<T, Box<dyn Error>>;
 
-pub fn run(sheets: Vec<String>) -> RunResult<()> {
+pub fn run(sheets: Vec<String>, list: bool) -> RunResult<()> {
     if sheets.len() <= 0 {
         return Err(From::from("Zero Sheets to find."));
     }
@@ -14,7 +14,7 @@ pub fn run(sheets: Vec<String>) -> RunResult<()> {
         let path = get_file_from_name(file_sheet.to_string()).into_owned();
         match open_file(&path) {
             Err(err) => eprintln!("{}: {}", path, err),
-            Ok(file) => sheet::process_new_sheet(file, &sheets[1..]),
+            Ok(file) => sheet::process_new_sheet(file, &sheets[1..], list),
         }
     }
 

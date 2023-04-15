@@ -3,6 +3,7 @@ use termimad::crossterm::style::Color::*;
 use termimad::*;
 
 type MDSheet = Vec<MDSection>;
+#[derive(Debug)]
 struct MDSection {
     anchor: String,
     content: Vec<String>,
@@ -45,6 +46,24 @@ fn display_sheet_anchors(sheet: &MDSheet) {
     }
 }
 
+#[test]
+fn test_empty_sheet() {
+    let input_bytes = "".as_bytes();
+    let subject = parse_sheet(Box::new(input_bytes));
+    assert_eq!(subject.len(), 1);
+    assert_eq!(subject.get(0).unwrap().anchor, "");
+    assert!(subject.get(0).unwrap().content.is_empty());
+}
+
+#[test]
+fn test_parse_simple_sheet() {
+    let input_bytes = "# header\n test line \n## header2 \n test line2 \n test line 3".as_bytes();
+    let subject = parse_sheet(Box::new(input_bytes));
+    assert_eq!(subject.len(), 3);
+    assert_eq!(subject.get(2).unwrap().anchor, "header2");
+    assert_eq!(subject.get(1).unwrap().content.len(), 2);
+    assert_eq!(subject.get(2).unwrap().content.len(), 3);
+}
 fn parse_sheet(sheet: Box<dyn BufRead>) -> MDSheet {
     let mut cheat_sheet = MDSheet::new();
     cheat_sheet.push(MDSection::new());
@@ -81,6 +100,29 @@ fn display_sheet_details(sheet: &MDSheet, filter: &Vec<String>) {
         show(&skin, &display_string);
     }
 }
+
+#[test]
+fn test_filter_section() {
+    let mut subject = MDSheet::default();
+    let mut section: MDSection = create_new_section("# one").unwrap();
+    let mut section2: MDSection = create_new_section("# two").unwrap();
+    section.add_line(String::from("section 1 line 1"));
+    section.add_line(String::from("section 1 line 2"));
+    section2.add_line(String::from("section 2 line 1"));
+    section2.add_line(String::from("section 2 line 2"));
+    subject.push(section);
+    subject.push(section2);
+
+    let results = filter_sections(&subject, "one");
+    assert_eq!(results.get(0).unwrap(), "section 1 line 1");
+    assert_eq!(results.get(1).unwrap(), "section 1 line 2");
+    let results = filter_sections(&subject, "two");
+    assert_eq!(results.get(0).unwrap(), "section 2 line 1");
+    assert_eq!(results.get(1).unwrap(), "section 2 line 2");
+    let results = filter_sections(&subject, "none");
+    assert_eq!(results.len(), 0);
+}
+
 fn filter_sections(sheet: &MDSheet, filter: &str) -> Vec<String> {
     sheet
         .iter()

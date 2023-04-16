@@ -1,7 +1,10 @@
+#[path = "./output.rs"]
+mod output;
 use std::io::BufRead;
 use termimad::crossterm::style::Color::*;
 use termimad::*;
 
+use self::output::Output;
 type MDSheet = Vec<MDSection>;
 #[derive(Debug)]
 struct MDSection {
@@ -30,19 +33,63 @@ impl MDSection {
 }
 
 pub fn process_new_sheet(sheet: Box<dyn BufRead>, filter: &[String], list: bool) {
+    let mut skin = MadSkin::default();
+    skin.set_headers_fg(Green);
+    skin.bold.set_fg(Yellow);
+    skin.italic.set_fg(Blue);
+
+    let mut output = output::Console { skin: skin };
+    display_sheet(sheet, filter, list, &mut output)
+}
+
+fn display_sheet<T: Output>(
+    sheet: Box<dyn BufRead>,
+    filter: &[String],
+    list: bool,
+    output: &mut T,
+) {
     let sections_to_filter = filter.to_vec();
     let target_sheet = parse_sheet(sheet);
 
     if list {
-        display_sheet_anchors(&target_sheet)
+        display_sheet_anchors(&target_sheet, output)
     } else {
-        display_sheet_details(&target_sheet, &sections_to_filter)
+        display_sheet_details(&target_sheet, &sections_to_filter, output)
     }
 }
 
-fn display_sheet_anchors(sheet: &MDSheet) {
+#[test]
+fn test_process_new_sheet_when_list_false() {
+    let mut output = output::MockConsole {
+        write_was_called: false,
+    };
+
+    let input_bytes = "# header\n test line \n## header2 \n test line2 \n test line 3".as_bytes();
+    let sheet = Box::new(input_bytes);
+    display_sheet(sheet, &["header".to_string()], false, &mut output);
+    assert_eq!(output.write_was_called, true);
+
+    let sheet = Box::new(input_bytes);
+    output.write_was_called = false;
+    display_sheet(sheet, &["header".to_string()], true, &mut output);
+    assert_eq!(output.write_was_called, true);
+}
+
+#[test]
+fn test_process_new_sheet_when_list_true() {
+    let mut output = output::MockConsole {
+        write_was_called: false,
+    };
+
+    let input_bytes = "# header\n test line \n## header2 \n test line2 \n test line 3".as_bytes();
+    let sheet = Box::new(input_bytes);
+    display_sheet(sheet, &["header".to_string()], true, &mut output);
+    assert_eq!(output.write_was_called, true);
+}
+
+fn display_sheet_anchors<T: Output>(sheet: &MDSheet, output: &mut T) {
     for section in sheet {
-        println!("{}", section.anchor);
+        output.write(section.anchor.as_str());
     }
 }
 
@@ -85,19 +132,20 @@ fn parse_sheet(sheet: Box<dyn BufRead>) -> MDSheet {
 
     cheat_sheet
 }
-
-fn display_sheet_details(sheet: &MDSheet, filter: &Vec<String>) {
+fn display_sheet_details<T: Output>(sheet: &MDSheet, filter: &Vec<String>, output: &mut T) {
     let skin = make_skin();
     if filter.len() > 0 {
         for section in filter {
-            let display_rows = filter_sections(&sheet, &section);
+            let display_rows = get_sections_with_filter(&sheet, &section);
             let display_string = display_rows.join("\n");
-            show(&skin, &display_string);
+            // show(&skin, &display_string);
+            output.write(&display_string)
         }
     } else {
-        let display_rows = all_sections(&sheet);
+        let display_rows = get_all_sections(&sheet);
         let display_string = display_rows.join("\n");
-        show(&skin, &display_string);
+        // show(&skin, &display_string);
+        output.write(&display_string)
     }
 }
 
@@ -113,17 +161,37 @@ fn test_filter_section() {
     subject.push(section);
     subject.push(section2);
 
-    let results = filter_sections(&subject, "one");
+    let results = get_sections_with_filter(&subject, "one");
     assert_eq!(results.get(0).unwrap(), "section 1 line 1");
     assert_eq!(results.get(1).unwrap(), "section 1 line 2");
-    let results = filter_sections(&subject, "two");
+    let results = get_sections_with_filter(&subject, "two");
     assert_eq!(results.get(0).unwrap(), "section 2 line 1");
     assert_eq!(results.get(1).unwrap(), "section 2 line 2");
-    let results = filter_sections(&subject, "none");
+    let results = get_sections_with_filter(&subject, "none");
     assert_eq!(results.len(), 0);
 }
+#[test]
+fn test_all_sections() {
+    let mut subject = MDSheet::default();
+    let mut section: MDSection = create_new_section("# one").unwrap();
+    let mut section2: MDSection = create_new_section("# two").unwrap();
+    section.add_line(String::from("section 1 line 1"));
+    section.add_line(String::from("section 1 line 2"));
+    section2.add_line(String::from("section 2 line 1"));
+    section2.add_line(String::from("section 2 line 2"));
+    subject.push(section);
+    subject.push(section2);
 
-fn filter_sections(sheet: &MDSheet, filter: &str) -> Vec<String> {
+    let results = get_all_sections(&subject);
+
+    assert!(results.len() == 4);
+    assert_eq!(results.get(0).unwrap(), "section 1 line 1");
+    assert_eq!(results.get(1).unwrap(), "section 1 line 2");
+    assert_eq!(results.get(2).unwrap(), "section 2 line 1");
+    assert_eq!(results.get(3).unwrap(), "section 2 line 2");
+}
+
+fn get_sections_with_filter(sheet: &MDSheet, filter: &str) -> Vec<String> {
     sheet
         .iter()
         .filter(|s| s.anchor.eq(&filter))
@@ -132,7 +200,7 @@ fn filter_sections(sheet: &MDSheet, filter: &str) -> Vec<String> {
         .collect()
 }
 
-fn all_sections(sheet: &MDSheet) -> Vec<String> {
+fn get_all_sections(sheet: &MDSheet) -> Vec<String> {
     sheet.iter().flat_map(|s| &s.content).cloned().collect()
 }
 

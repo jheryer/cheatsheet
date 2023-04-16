@@ -49,8 +49,8 @@
 |
 | Syntax | Description |
 | --- | --- |
-| `` `Inline code` `` | `Inline code` |
-| <pre>```<br>Code block<br>```</pre> | Code block |
+| `` \`Inline code\` `` | `Inline code` |
+| \`\`\`Code block\`\`\` | Code block |
 |
 ## Blockquotes
 |

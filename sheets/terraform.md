@@ -6,7 +6,7 @@
 | --- | --- |
 | `terraform init` | Initialize a new or existing Terraform working directory by downloading modules and setting up the backend |
 |
-## Planning and Applying Changes
+## Planning 
 |
 | Command | Description |
 | --- | --- |
@@ -14,7 +14,7 @@
 | `terraform apply` | Apply the changes required to reach the desired state of the configuration |
 | `terraform destroy` | Destroy the managed infrastructure |
 |
-## Inspecting Terraform State
+## Inspecting 
 |
 | Command | Description |
 | --- | --- |
@@ -22,14 +22,14 @@
 | `terraform state list` | List resources in the state |
 | `terraform state show <resource>` | Show the attributes of a single resource in the state |
 |
-## Importing and Migrating Resources
+## Importing 
 |
 | Command | Description |
 | --- | --- |
 | `terraform import <address> <id>` | Import existing infrastructure into your Terraform state |
 | `terraform state mv <source> <destination>` | Move an item in the state to another location or to a different environment |
 |
-## Workspace Management
+## Workspace
 |
 | Command | Description |
 | --- | --- |
@@ -38,17 +38,12 @@
 | `terraform workspace list` | List available workspaces |
 | `terraform workspace delete <name>` | Delete an existing workspace |
 |
-## Output and Formatting
-|
-| Command | Description |
-| --- | --- |
-| `terraform output` | Show output values from your root module |
-| `terraform fmt` | Reformat your configuration in the standard style |
-|
-## Miscellaneous Commands
+## General
 |
 | Command | Description |
 | --- | --- |
 | `terraform validate` | Validate the configuration files |
 | `terraform version` | Show the Terraform version |
+| `terraform output` | Show output values from your root module |
+| `terraform fmt` | Reformat your configuration in the standard style |
 |

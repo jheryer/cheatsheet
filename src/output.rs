@@ -1,5 +1,4 @@
-use termimad::crossterm::style::Color::*;
-use termimad::*;
+use termimad::MadSkin;
 
 pub trait Output {
     fn write(&mut self, src: &str);
@@ -9,8 +8,7 @@ pub struct MockConsole {
     pub write_was_called: bool,
 }
 impl Output for MockConsole {
-    fn write(&mut self, src: &str) {
-        println!("{}", src);
+    fn write(&mut self, _src: &str) {
         self.write_was_called = true;
     }
 }
@@ -24,7 +22,3 @@ impl Output for Console {
         self.skin.print_text(src)
     }
 }
-
-// pub fn write<T: Output>(mut output: T, src: &str) {
-//     output.write(src);
-// }

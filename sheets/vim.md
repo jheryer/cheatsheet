@@ -15,7 +15,7 @@
 	y: yank (copy)
 	v: visually select (V for line vs. character)
 
-## Basic Motion
+## Motion
 	j: move down one line
 	k: move up one line
 	h: move left one character
@@ -42,7 +42,7 @@
 	Ctrl-i: jump to your previous navigation location
 	Ctrl-o: jump back to where you were
 
-## Basic Change / Insert
+## change
 	insert before the cursor
 	a: append after the cursor
 	I: insert at the beginning of the line
@@ -58,7 +58,7 @@
 	S: substitute the entire current line
 	cis: change inside sentence
 
-## Delete text
+## Delete
 	x: exterminate (delete) the character under the cursor
 	X: exterminate (delete) the character before the cursor
 	dm: delete whatever you define as a movement, e.g. a word, or a sentence, or a paragraph.
@@ -67,7 +67,7 @@
 	D: delete to the end of the line
 	J: join the current line with the next one (delete what's between)
 
-## Undo / Re-do
+## Undo
 	u: undo your last action.
 	Ctrl-r: redo the last action
 
@@ -94,7 +94,7 @@
 	t: tag (think HTML/XML)
 	b: block (think programming)
 
-## Search Reference
+## Search
 	/{string}: search for string
 	t: jump up to a character
 	f: jump onto a character

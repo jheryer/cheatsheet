@@ -12,7 +12,7 @@ Source: https://docs.docker.com/get-started/docker_cheatsheet.pdf
 |docker image prune| Remove all unused images
 |
 
-## Docker Hub
+## Hub
 |
 |**Command**|**Description**
 |-|-

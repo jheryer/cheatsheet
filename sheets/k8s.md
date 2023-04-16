@@ -1,6 +1,6 @@
 # Kubernetes
 
-## Cluster Information
+## Cluster
 |
 | Command | Description |
 | --- | --- | 
@@ -26,7 +26,7 @@
 | `kubectl get persistentVolumeClaims` | List all persistentVolumeClaims in a namespace |
 | `kubectl get storageClasses` | List all storageClasses in a namespace |
 |
-## Resource Details
+## Details
 |
 | Command | Description |
 | --- | --- | 
@@ -35,7 +35,7 @@
 | `kubectl exec -it <pod-name> -- /bin/bash` | Execute a command in a container |
 | `kubectl cp <src> <dst>` | Copy files and directories to/from a container |
 |
-## Create and Update
+## CRUD
 |
 | Command | Description |
 | --- | --- | 
@@ -43,21 +43,16 @@
 | `kubectl apply -f <filename>` | Apply a configuration to a resource by filename |
 | `kubectl set image deployment/<deployment-name> <container-name>=<new-image>` | Update the image of a deployment |
 | `kubectl edit <resource> <name>` | Edit a resource |
-|
-## Delete
-|
-| Command | Description |
-| --- | --- | 
 | `kubectl delete -f <filename>` | Delete resources specified in a file |
 | `kubectl delete <resource> <name>` | Delete a specific resource by name |
 |
-## Autoscaling
+## Autoscale
 |
 | Command | Description |
 | --- | --- | 
 | `kubectl autoscale deployment <deployment-name> --min=<min> --max=<max> --cpu-percent=<target>` | Autoscale a deployment based on CPU usage |
 |
-## Rolling Update
+## rollout
 |
 | Command | Description |
 | --- | --- | 
@@ -65,7 +60,7 @@
 | `kubectl rollout history deployment/<deployment-name>` | Get the revision history of a deployment |
 | `kubectl rollout undo deployment/<deployment-name> --to-revision=<revision>` | Rollback a deployment to a specific revision |
 |
-## Configuration Context
+## Config
 |
 | Command | Description |
 | --- | --- | 

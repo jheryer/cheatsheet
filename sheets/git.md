@@ -1,13 +1,13 @@
 # git
 
-## Repository Creation and Cloning
+## create 
 |
 | Command | Description |
 | --- | --- |
 | `git init` | Initialize a new local Git repository |
 | `git clone <repository>` | Create a working copy of a remote repository |
 |
-## Local Changes
+## local
 |
 | Command | Description |
 | --- | --- |
@@ -17,7 +17,7 @@
 | `git add .` | Add all new and changed files to the staging area |
 | `git commit -m "<message>"` | Commit changes with a message |
 |
-## Branching and Merging
+## branching
 |
 | Command | Description |
 | --- | --- |
@@ -27,7 +27,7 @@
 | `git checkout -b <branch-name>` | Create a new branch and switch to it |
 | `git merge <branch-name>` | Merge a branch into the active branch |
 |
-## Remote Repositories
+## Remotes
 |
 | Command | Description |
 | --- | --- |
@@ -37,7 +37,7 @@
 | `git pull <remote-name> <branch-name>` | Fetch and merge changes from a remote branch |
 | `git push <remote-name> <branch-name>` | Push local branch changes to a remote repository |
 |
-## Undoing Changes
+## undo
 |
 | Command | Description |
 | --- | --- |
@@ -47,7 +47,7 @@
 | `git checkout -- <file>` | Discard changes to a file |
 | `git revert <commit>` | Create a new commit that undoes changes from a previous commit |
 |
-## History and Inspection
+## log
 |
 | Command | Description |
 | --- | --- |

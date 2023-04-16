@@ -1,6 +1,7 @@
 # gcloud
 
-## Configuration and Setup
+## config
+Configuration and Setup
 |
 | Command | Description |
 | --- | --- |
@@ -8,7 +9,8 @@
 | `gcloud config set project <project-id>` | Set the active project |
 | `gcloud config set compute/zone <zone>` | Set the default compute zone |
 |
-## Compute Engine Instances
+## GCE
+Compute Engine Instances
 |
 | Command | Description |
 | --- | --- |
@@ -16,7 +18,8 @@
 | `gcloud compute instances create <instance-name> --image-family <image-family> --image-project <image-project> --machine-type <machine-type>` | Create a new Compute Engine instance |
 | `gcloud compute instances delete <instance-name>` | Delete a Compute Engine instance |
 |
-## Kubernetes Engine Clusters
+## GKE 
+Kubernetes Engine Clusters
 |
 | Command | Description |
 | --- | --- |
@@ -24,14 +27,16 @@
 | `gcloud container clusters create <cluster-name> --zone <zone> --num-nodes <num-nodes>` | Create a new Kubernetes Engine cluster |
 | `gcloud container clusters delete <cluster-name> --zone <zone>` | Delete a Kubernetes Engine cluster |
 |
-## App Engine Applications
+## GAE
+App Engine Applications
 |
 | Command | Description |
 | --- | --- |
 | `gcloud app deploy` | Deploy an App Engine application |
 | `gcloud app browse` | Open the deployed application in a web browser |
 |
-## Cloud Functions
+## Functions
+Cloud Functions
 |
 | Command | Description |
 | --- | --- |
@@ -39,7 +44,8 @@
 | `gcloud functions deploy <function-name> --runtime <runtime> --trigger-http --allow-unauthenticated` | Deploy a new Cloud Function |
 | `gcloud functions delete <function-name>` | Delete a Cloud Function |
 |
-## Cloud Storage Buckets
+## Storage
+Cloud Storage Buckets
 |
 | Command | Description |
 | --- | --- |
@@ -48,7 +54,7 @@
 | `gcloud storage cp gs://<bucket-name>/<source> <destination>` | Download a file or directory from a Cloud Storage bucket |
 | `gcloud storage rm gs://<bucket-name>/<object>` | Delete an object from a Cloud Storage bucket |
 |
-## General Commands
+## General 
 |
 | Command | Description |
 | --- | --- |

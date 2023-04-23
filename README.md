@@ -4,15 +4,13 @@
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Usage](#usage)
-  - [List all cheat sheets](#list-all-cheat-sheets)
-  - [View a cheat sheet](#view-a-cheat-sheet)
-  - [Create a cheat sheet](#create-a-cheat-sheet)
-  - [Edit a cheat sheet](#edit-a-cheat-sheet)
-  - [Delete a cheat sheet](#delete-a-cheat-sheet)
-- [Contributing](#contributing)
-- [License](#license)
+- [Cheatsheet CLI](#cheatsheet-cli)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [Available Cheatsheets](#available-cheatsheets)
+  - [Create a new cheatsheet](#create-a-new-cheatsheet)
+  - [Troubleshooting](#troubleshooting)
 
 ## Installation
 
@@ -37,5 +35,54 @@ export CHEAT_SHEET_PATH=~/.cheatsheets
 ```
 
 ## Usage
+* List all cheat sheets
+  ```sh
+  cheatsheet --list
+  ```
+* Show the docker cheat sheet
+  ```sh
+  cheatsheet docker
+  ```
+* Show the sections in the docker cheat sheet
+  ```sh
+  cheatsheet docker -l
+  ```
+* Show only the general and images sections in the docker cheat sheet
+  ```sh
+  cheatsheet docker general images
+  ``` 
+* Show help
+  ```sh
+  cheatsheet --help
+  ``` 
 
 
+## Available Cheatsheets
+* markdown
+* vim
+* gsutil
+* k8s
+* maven
+* terraform
+* git
+* docker
+* aws
+* gcloud
+* xcodebuild
+* conda
+* sed
+* cargo
+
+## Create a new cheatsheet
+Create a new markdown file in $CHEAT_SHEET_PATH and verify it shows up with --list. Markdown headings provide filtering by section.
+
+
+## Troubleshooting
+```sh
+cheatsheet --list
+No such file or directory (os error 2)
+```
+Ensure the $CHEAT_SHEET_PATH is set
+```sh
+export CHEAT_SHEET_PATH=~/.cheatsheets
+```

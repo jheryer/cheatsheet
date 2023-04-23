@@ -4,6 +4,7 @@ use std::env;
 #[command(author,version,about,long_about=None)]
 pub struct Args {
     sheets: Vec<String>,
+    /// List available sheets or sections
     #[arg(short, long, default_value_t = false)]
     list: bool,
 }
@@ -15,7 +16,7 @@ fn main() {
     if option_sheet_path.is_ok() {
         sheet_path = option_sheet_path.unwrap().to_owned();
     } else {
-        sheet_path = String::from("./sheets");
+        sheet_path = String::from("~/.cheatsheets");
     }
 
     let args = Args::parse();
